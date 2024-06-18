@@ -8,6 +8,7 @@ import {
   MatrixType,
   MinefieldGenerateRequest,
 } from '@/types/game';
+import { generateEmptyMatrix } from '@/utils/game';
 
 type QueryType = (
   params: MinefieldGenerateRequest,
@@ -17,10 +18,11 @@ interface HookData {
   data: MatrixType;
   loading: boolean;
   queryData: QueryType;
+  resetData: () => void;
 }
 
 export const useGenerateMatrix = (): HookData => {
-  const [data, setData] = useState<MatrixType>(null);
+  const [data, setData] = useState<MatrixType>(() => generateEmptyMatrix());
   const [loading, setLoading] = useState(false);
 
   const queryData: QueryType = useCallback(async ({ row, col }) => {
@@ -48,9 +50,14 @@ export const useGenerateMatrix = (): HookData => {
     }
   }, []);
 
+  const resetData = useCallback(() => {
+    setData(generateEmptyMatrix());
+  }, []);
+
   return {
     data,
     loading,
     queryData,
+    resetData,
   };
 };

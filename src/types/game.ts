@@ -1,8 +1,6 @@
 import { ResponseData } from '@/types/http';
 
-export type CellType = string;
-
-export type MatrixType = Array<Array<CellType>>;
+export type MatrixType = Array<Array<string>>;
 
 interface GenerateResult {
   matrix: MatrixType;

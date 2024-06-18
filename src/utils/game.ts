@@ -2,19 +2,25 @@ import { BOMBS_COUNT, CELL_BORDERS, GRID_SIZE } from '@/constants/game';
 import { MatrixType } from '@/types/game';
 
 /**
+ * Generate a matrix filled with empty cells.
+ */
+export const generateEmptyMatrix = () => {
+  return Array.from({ length: GRID_SIZE }, () =>
+    Array.from({ length: GRID_SIZE }, () => '0'),
+  );
+};
+
+/**
  * Generate a matrix with count of GRID_SIZE * GRID_SIZE cells.
  * Avoid first click is never a mine by first clicked position(x,y)
  * Each cell is one of following types:
  * 1. 'X': Bomb cell
  * 2. '(number)': With (number) bombs surrounding
- * 3. '': Not a bomb cell or any bombs surrounding by
  */
 export const generateMatrix = (row: number, col: number): MatrixType => {
   const firstClickedCell = `${row}-${col}`;
 
-  const MATRIX = Array.from({ length: GRID_SIZE }, () =>
-    Array.from({ length: GRID_SIZE }, () => ''),
-  );
+  const MATRIX = generateEmptyMatrix();
   const bombCells: string[] = [];
 
   // Generate random bombs in the board.
