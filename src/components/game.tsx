@@ -28,6 +28,7 @@ const Game = () => {
     data: matrix,
     queryData: generateMatrix,
     resetData: resetMatrix,
+    loading: generateMatrixLoading,
   } = useGenerateMatrix();
 
   // When the game status changes
@@ -118,6 +119,9 @@ const Game = () => {
 
       let newMatrix = matrix;
       if (status === 'idle') {
+        if (generateMatrixLoading) {
+          return;
+        }
         const res = await generateMatrix({ row: rowIndex, col: colIndex });
         if (res) {
           newMatrix = res;
