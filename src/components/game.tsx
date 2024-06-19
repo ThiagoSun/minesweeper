@@ -6,7 +6,7 @@ import { useGenerateMatrix } from '@/models/useGenerateMatrix';
 import Cell from '@/components/cell';
 import { formatTimeBySeconds } from '@/utils/time';
 import { MatrixType } from '@/types/game';
-import { checkIsOutsideGrid } from '@/utils/game-client';
+import { checkIsOutsideGrid } from '@/utils/game';
 
 const Game = () => {
   // Clicked square coordinate list, `${xIndex}-${yIndex}`
