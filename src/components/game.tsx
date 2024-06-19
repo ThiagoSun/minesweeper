@@ -6,6 +6,7 @@ import { useGenerateMatrix } from '@/models/useGenerateMatrix';
 import Cell from '@/components/cell';
 import { formatTimeBySeconds } from '@/utils/time';
 import { MatrixType } from '@/types/game';
+import { checkIsOutsideGrid } from '@/utils/game-client';
 
 const Game = () => {
   // Clicked square coordinate list, `${xIndex}-${yIndex}`
@@ -28,15 +29,6 @@ const Game = () => {
     queryData: generateMatrix,
     resetData: resetMatrix,
   } = useGenerateMatrix();
-
-  // Restart the game.
-  const handleRestart = useCallback(() => {
-    resetMatrix();
-    setClicked(new Set());
-    setFlagged(new Set());
-    setStatus('idle');
-    setFlags(BOMBS_COUNT);
-  }, [resetMatrix]);
 
   // When the game status changes
   useEffect(() => {
@@ -75,10 +67,7 @@ const Game = () => {
       // 3.Checking the cell isn't flagged.
       if (
         visitedCells.has(cell) ||
-        rowIndex <= -1 ||
-        rowIndex >= GRID_SIZE ||
-        colIndex <= -1 ||
-        colIndex >= GRID_SIZE ||
+        checkIsOutsideGrid(rowIndex, colIndex) ||
         flagged.has(cell)
       ) {
         return;
@@ -111,6 +100,15 @@ const Game = () => {
     },
     [],
   );
+
+  // Restart the game.
+  const handleRestart = useCallback(() => {
+    resetMatrix();
+    setClicked(new Set());
+    setFlagged(new Set());
+    setStatus('idle');
+    setFlags(BOMBS_COUNT);
+  }, [resetMatrix]);
 
   const handleLeftClick = useCallback(
     async (rowIndex: number, colIndex: number) => {
@@ -174,23 +172,70 @@ const Game = () => {
     [flagged, flags, status],
   );
 
+  const getSurroundingFlagsCount = useCallback(
+    (rowIndex: number, colIndex: number) => {
+      let count = 0;
+      for (const border of CELL_BORDERS) {
+        const newRowIndex = rowIndex + border[0];
+        const newColIndex = colIndex + border[1];
+
+        // Checking the cell isn't outside the grid layout.
+        if (checkIsOutsideGrid(newColIndex, newColIndex)) {
+          continue;
+        }
+
+        const cell = `${newRowIndex}-${newColIndex}`;
+        if (flagged.has(cell)) {
+          count++;
+        }
+      }
+      return count;
+    },
+    [flagged],
+  );
+
+  // While clicks on a number cell
+  const handleDoubleClick = useCallback(
+    async (rowIndex: number, colIndex: number) => {
+      const flagCount = getSurroundingFlagsCount(rowIndex, colIndex);
+
+      if (flagCount !== Number(matrix[rowIndex]?.[colIndex])) {
+        return;
+      }
+
+      for (const border of CELL_BORDERS) {
+        const newRowIndex = rowIndex + border[0];
+        const newColIndex = colIndex + border[1];
+
+        // Checking the cell isn't outside the grid layout.
+        if (checkIsOutsideGrid(newRowIndex, newColIndex)) {
+          continue;
+        }
+        await handleLeftClick(newRowIndex, newColIndex);
+      }
+    },
+    [getSurroundingFlagsCount, handleLeftClick, matrix],
+  );
+
   const timeFormatted = useMemo(() => {
     return formatTimeBySeconds(time);
   }, [time]);
 
   return (
-    <section className="flex flex-col items-center">
-      <div className="flex justify-between font-bold px-2 w-full text-2xl">
+    <section className="flex flex-col items-center gap-2">
+      <div className="flex justify-between font-medium px-2 w-full text-2xl text-slate-600">
         <span>{timeFormatted}</span>
         {status === 'lost' ? (
-          <span>You lost</span>
+          <span className={'font-bold text-slate-600'}>Failed 😵‍💫</span>
         ) : status === 'won' ? (
-          <span>You win</span>
+          <span className={'font-bold text-orange-500'}>
+            Congratulations! 🎉
+          </span>
         ) : null}
         <span className="flex">⛳ x{flags}</span>
       </div>
       <div
-        className={`bg-white rounded-lg p-4 font-bold text-2xl shadow-md ${status === 'lost' && 'shake'}`}
+        className={`bg-white rounded-lg p-4 text-2xl shadow-md ${status === 'lost' && 'shake'}`}
       >
         {matrix.map((row, rowIndex) => (
           <div key={rowIndex} className="flex">
@@ -204,6 +249,7 @@ const Game = () => {
                 isFlagged={flagged.has(`${rowIndex}-${colIndex}`)}
                 onLeftClick={handleLeftClick}
                 onRightClick={handleRightClick}
+                onDoubleClick={handleDoubleClick}
               />
             ))}
           </div>

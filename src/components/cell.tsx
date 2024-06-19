@@ -10,6 +10,7 @@ interface CellProps {
   isFlagged: boolean;
   onLeftClick: (rowIndex: number, colIndex: number) => void;
   onRightClick: (rowIndex: number, colIndex: number) => void;
+  onDoubleClick: (rowIndex: number, colIndex: number) => void;
 }
 
 const Cell: FC<CellProps> = ({
@@ -20,6 +21,7 @@ const Cell: FC<CellProps> = ({
   isFlagged,
   onLeftClick,
   onRightClick,
+  onDoubleClick: onPropsDoubleClick,
 }) => {
   const onClick = useCallback(() => {
     onLeftClick(rowIndex, colIndex);
@@ -33,6 +35,11 @@ const Cell: FC<CellProps> = ({
     [colIndex, onRightClick, rowIndex],
   );
 
+  const onDoubleClick = useCallback(() => {
+    onPropsDoubleClick(rowIndex, colIndex);
+  }, [colIndex, onPropsDoubleClick, rowIndex]);
+
+  // Root element classnames
   const className = cls(
     `h-[7vmin] w-[7vmin] flex justify-center items-center`,
     {
@@ -49,12 +56,18 @@ const Cell: FC<CellProps> = ({
     <div key={`${rowIndex}-${colIndex}`} className={className}>
       {isClicked ? (
         <span
-          className={cls({
-            'text-green-600': Number(cellValue) <= 1,
-            'text-yellow-500': Number(cellValue) === 2,
-            'text-red-600': Number(cellValue) === 3,
-            'text-purple-600': Number(cellValue) >= 4,
-          })}
+          className={cls(
+            'font-bold cursor-default select-none',
+            'w-full h-full',
+            'flex justify-center items-center',
+            {
+              'text-green-600': Number(cellValue) <= 1,
+              'text-yellow-500': Number(cellValue) === 2,
+              'text-red-600': Number(cellValue) === 3,
+              'text-purple-600': Number(cellValue) >= 4,
+            },
+          )}
+          onDoubleClick={onDoubleClick}
         >
           {cellValue === 'X' ? '💣' : cellValue === '0' ? null : cellValue}
         </span>
