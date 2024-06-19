@@ -148,7 +148,15 @@ const Game = () => {
         setStatus('won');
       }
     },
-    [clearSurroundings, clicked, flagged, generateMatrix, matrix, status],
+    [
+      clearSurroundings,
+      clicked,
+      flagged,
+      generateMatrix,
+      generateMatrixLoading,
+      matrix,
+      status,
+    ],
   );
 
   const handleRightClick = useCallback(
